@@ -8,30 +8,41 @@ import {
 
   export function Presentation() {
     return (
-      <Card className="w-full max-w-[56 rem] flex-row mt-16">
+      <Card className="w-full max-w-full flex flex-col md:flex-row mt-16">
+        {/* Immagine Responsiva */}
         <CardHeader
           shadow={false}
           floated={false}
-          className="m-0 w-2/5 shrink-0 rounded-r-none"
+          className="m-0 w-full md:w-2/5 shrink-0 md:rounded-r-none"
         >
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
             alt="card-image"
-            className="h-full w-full object-cover"
+            className="h-64 md:h-full w-full object-cover"
           />
         </CardHeader>
-        <CardBody>
-          <Typography variant="h6" color="gray" className="mb-4 uppercase">
+
+        {/* Corpo del Testo */}
+        <CardBody className="p-4 md:p-6">
+          <Typography
+            variant="h6"
+            color="gray"
+            className="mb-2 uppercase text-sm md:text-base"
+          >
             startups
           </Typography>
-          <Typography variant="h4" color="blue-gray" className="mb-2">
+          <Typography
+            variant="h4"
+            color="blue-gray"
+            className="mb-2 text-lg md:text-2xl"
+          >
             Lyft launching cross-platform service this week
           </Typography>
-          <Typography color="gray" className="mb-8 font-normal">
+          <Typography color="gray" className="mb-6 font-normal text-sm md:text-base">
             Like so many organizations these days, Autodesk is a company in
             transition. It was until recently a traditional boxed software company
-            selling licenses. Yet its own business model disruption is only part
-            of the story
+            selling licenses. Yet its own business model disruption is only part of
+            the story
           </Typography>
           <a href="#" className="inline-block">
             <Button variant="text" className="flex items-center gap-2">
