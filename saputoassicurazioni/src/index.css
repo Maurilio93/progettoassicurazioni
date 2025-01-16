@@ -3,3 +3,6 @@
 @tailwind utilities;
 
 
+#preventivo-section {
+    scroll-margin-top: 100px;
+  }

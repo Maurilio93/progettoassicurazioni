@@ -6,13 +6,14 @@ export default withMT({
   theme: {
     extend: {
       screens: {
-        mobile: "378px", // Breakpoint personalizzato per dispositivi mobili
-        tablet: "1024px", // Breakpoint per tablet
-        desktop: "1025px", // Breakpoint per desktop
+        mobile: "378px",
+        smalltablet: "768px",
+        tablet: "1024px",
+        desktop: "1025px",
       },
       fontFamily: {
-        sans: ["Quicksand", "sans-serif"], // Font predefinito sans
-        quicksand: ["Quicksand", "sans-serif"], // Font quicksand personalizzato
+        sans: ["Quicksand", "sans-serif"],
+        quicksand: ["Quicksand", "sans-serif"],
       },
     },
   },
