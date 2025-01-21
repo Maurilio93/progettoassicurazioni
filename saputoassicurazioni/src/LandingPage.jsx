@@ -1,14 +1,11 @@
 import { ButtonWithLink } from "./Button";
 import { Form } from "./Form";
 import { Presentation } from "./Presentation";
-import { Navbar } from "./Navbar";
 
+// Se hai bisogno di handleLogin dentro la LandingPage:
 export function LandingPage() {
   return (
     <div className="w-full">
-      {/* Navbar */}
-      <Navbar />
-
       {/* Sezione immagini affiancate */}
       <div className="pt-24 mt-10 flex flex-col mobile:flex-col tablet:flex-col desktop:flex-row justify-center items-center gap-4 px-4 tablet:px-6 tablet:mt-8 desktop:px-8">
         {/* Prima immagine con didascalia */}
@@ -43,7 +40,7 @@ export function LandingPage() {
       {/* Sezione form e immagine accanto */}
       <div className="flex flex-col tablet:flex-row items-center justify-center gap-8 mt-10 px-4 tablet:px-6 desktop:px-0">
         {/* Immagine accanto alla form */}
-        <div className="tablet:w-1/2 w-full h-auto mobile:mt-8" >
+        <div className="tablet:w-1/2 w-full h-auto mobile:mt-8">
           <img
             className="w-full h-full object-contain rounded-lg"
             src="images/Blue Illustrated We're Hiring LinkedIn LinkedIn Sponsored Content (1).png"

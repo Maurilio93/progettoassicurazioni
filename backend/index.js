@@ -4,48 +4,29 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const mysql = require("mysql2");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const cors = require("cors");
 
-app.use(cors());
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware per il parsing del corpo delle richieste
-app.use(bodyParser.json());
+// Middleware
+app.use(cors());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configurazione Multer per la gestione dei file
+// Configurazione multer per il caricamento dei file
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Cartella in cui salvare i file
-  },
+  destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
-    );
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
   },
 });
+const upload = multer({ storage });
 
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png|pdf/;
-    const extName = fileTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    const mimeType = fileTypes.test(file.mimetype);
-
-    if (extName && mimeType) {
-      cb(null, true);
-    } else {
-      cb(new Error("Tipo di file non supportato!"));
-    }
-  },
-});
-
-// Configurazione del database
+// Configurazione database MySQL
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -53,68 +34,78 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-// Test della connessione al database
 db.connect((err) => {
   if (err) {
-    console.error("Errore di connessione al database:", err.message);
-  } else {
-    console.log("Connesso al database!");
+    console.error("Errore di connessione al database:", err);
+    process.exit(1);
   }
+  console.log("Connesso al database!");
 });
 
-app.post(
-  "/upload",
-  upload.fields([
-    { name: "cartaIdentita", maxCount: 1 },
-    { name: "librettoVeicolo", maxCount: 1 },
-  ]),
-  (req, res) => {
-    console.log("FILES RICEVUTI:", req.files);
-    console.log("BODY RICEVUTO:", req.body);
+// Middleware per proteggere le rotte
+const authenticateToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) return res.status(403).json({ message: "Token mancante" });
 
-    if (!req.files || !req.files.cartaIdentita || !req.files.librettoVeicolo) {
-      return res.status(400).send("Tutti i file sono obbligatori!");
-    }
-
-    const cartaIdentitaPath = req.files.cartaIdentita[0].path;
-    const librettoVeicoloPath = req.files.librettoVeicolo[0].path;
-    const { email, telefono } = req.body;
-
-    // Query per inserire i dati nel database
-    const query = `INSERT INTO preventivi (carta_identita_path, libretto_veicolo_path, email, telefono)
-                     VALUES (?, ?, ?, ?)`;
-
-    db.query(
-      query,
-      [cartaIdentitaPath, librettoVeicoloPath, email || null, telefono],
-      (err) => {
-        if (err) {
-          console.error(
-            "Errore durante il salvataggio nel database:",
-            err.message
-          );
-          return res.status(500).send("Errore del server!");
-        }
-        res.send("Dati salvati con successo!");
-      }
-    );
-  }
-);
-
-app.get("/files", (req, res) => {
-    const query = "SELECT carta_identita_path, libretto_veicolo_path, email, telefono FROM preventivi";
-
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("Errore durante il recupero dei file:", err.message);
-        return res.status(500).send("Errore durante il recupero dei file!");
-      }
-
-      // Invia i risultati come JSON
-      res.json(results);
-    });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Token non valido" });
+    req.user = user;
+    next();
   });
+};
 
+// Rotta per il download di file (protetta)
+app.get("/download/:filename", authenticateToken, (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "uploads", filename); // Percorso corretto
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Errore durante il download del file:", err);
+      return res.status(404).send("File non trovato!");
+    }
+  });
+});
+
+// API per ricevere dati dalla form
+app.post("/upload", upload.fields([{ name: "cartaIdentita" }, { name: "librettoVeicolo" }]), (req, res) => {
+  const { email, telefono } = req.body;
+  const cartaIdentitaPath = req.files["cartaIdentita"][0].path;
+  const librettoVeicoloPath = req.files["librettoVeicolo"][0].path;
+
+  const query = "INSERT INTO user_data (email, telefono, carta_identita_path, libretto_veicolo_path) VALUES (?, ?, ?, ?)";
+  db.query(query, [email, telefono, cartaIdentitaPath, librettoVeicoloPath], (err) => {
+    if (err) {
+      console.error("Errore durante l'inserimento dei dati:", err);
+      return res.status(500).json({ message: "Errore durante il salvataggio dei dati" });
+    }
+    res.status(200).json({ message: "Dati inviati con successo!" });
+  });
+});
+
+// API per autenticare l'admin
+app.post("/admin/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Sostituisci con credenziali configurate nel file .env
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    return res.json({ token });
+  }
+
+  res.status(401).json({ message: "Credenziali non valide" });
+});
+
+// API per ottenere i file (protetta)
+app.get("/files", authenticateToken, (req, res) => {
+  const query = "SELECT * FROM user_data";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Errore durante il recupero dei dati:", err);
+      return res.status(500).json({ message: "Errore durante il recupero dei dati" });
+    }
+    res.json(results);
+  });
+});
 
 // Avvio del server
 app.listen(PORT, () => {
