@@ -15,13 +15,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/download", express.static(path.join(__dirname, "uploads")));
 
 // Configurazione multer per il caricamento dei file
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+    );
   },
 });
 const upload = multer({ storage });
@@ -55,9 +59,9 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Rotta per il download di file (protetta)
-app.get("/download/:filename", authenticateToken, (req, res) => {
+app.get("/download/:filename", (req, res) => {
   const { filename } = req.params;
-  const filePath = path.join(__dirname, "uploads", filename); // Percorso corretto
+  const filePath = path.join(__dirname, "uploads", filename);
   res.download(filePath, (err) => {
     if (err) {
       console.error("Errore durante il download del file:", err);
@@ -66,29 +70,50 @@ app.get("/download/:filename", authenticateToken, (req, res) => {
   });
 });
 
-// API per ricevere dati dalla form
-app.post("/upload", upload.fields([{ name: "cartaIdentita" }, { name: "librettoVeicolo" }]), (req, res) => {
-  const { email, telefono } = req.body;
-  const cartaIdentitaPath = req.files["cartaIdentita"][0].path;
-  const librettoVeicoloPath = req.files["librettoVeicolo"][0].path;
 
-  const query = "INSERT INTO user_data (email, telefono, carta_identita_path, libretto_veicolo_path) VALUES (?, ?, ?, ?)";
-  db.query(query, [email, telefono, cartaIdentitaPath, librettoVeicoloPath], (err) => {
-    if (err) {
-      console.error("Errore durante l'inserimento dei dati:", err);
-      return res.status(500).json({ message: "Errore durante il salvataggio dei dati" });
-    }
-    res.status(200).json({ message: "Dati inviati con successo!" });
-  });
-});
+
+// API per ricevere dati dalla form
+app.post(
+  "/upload",
+  upload.fields([{ name: "cartaIdentita" }, { name: "librettoVeicolo" }]),
+  (req, res) => {
+    const { email, telefono } = req.body;
+
+    // Ricava il nome del file generato da multer (senza "uploads/")
+    const cartaIdentitaFilename = req.files["cartaIdentita"][0].filename;
+    const librettoVeicoloFilename = req.files["librettoVeicolo"][0].filename;
+
+    const query =
+      "INSERT INTO user_data (email, telefono, carta_identita_path, libretto_veicolo_path) VALUES (?, ?, ?, ?)";
+    db.query(
+      query,
+      [email, telefono, cartaIdentitaFilename, librettoVeicoloFilename],
+      (err) => {
+        if (err) {
+          console.error("Errore durante l'inserimento dei dati:", err);
+          return res
+            .status(500)
+            .json({ message: "Errore durante il salvataggio dei dati" });
+        }
+        res.status(200).json({ message: "Dati inviati con successo!" });
+      }
+    );
+  }
+);
+
 
 // API per autenticare l'admin
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
 
   // Sostituisci con credenziali configurate nel file .env
-  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-    const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  if (
+    username === process.env.ADMIN_USERNAME &&
+    password === process.env.ADMIN_PASSWORD
+  ) {
+    const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     return res.json({ token });
   }
 
@@ -101,7 +126,9 @@ app.get("/files", authenticateToken, (req, res) => {
   db.query(query, (err, results) => {
     if (err) {
       console.error("Errore durante il recupero dei dati:", err);
-      return res.status(500).json({ message: "Errore durante il recupero dei dati" });
+      return res
+        .status(500)
+        .json({ message: "Errore durante il recupero dei dati" });
     }
     res.json(results);
   });
