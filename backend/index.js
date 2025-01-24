@@ -59,7 +59,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Rotta per il download di file (protetta)
-app.get("/download/:filename", (req, res) => {
+app.get("/download/:filename",authenticateToken, (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(__dirname, "uploads", filename);
   res.download(filePath, (err) => {

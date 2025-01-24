@@ -1,12 +1,12 @@
 // eslint-disable-next-line react/prop-types
 export function Navbar({ token, setToken, handleLogin, handleLogout }) {
-  console.log('Navbar props:', { token, setToken }); // Debug
+  console.log("Navbar props:", { token, setToken });
 
   const handleLoginClick = async () => {
     const username = prompt("Inserisci username:");
     const password = prompt("Inserisci password:");
-    console.log("Username inviato:", username);  // Debugging
-    console.log("Password inviata:", password);  // Debugging
+    console.log("Username inviato:", username);
+    console.log("Password inviata:", password);
 
     try {
       const response = await fetch("http://localhost:3000/admin/login", {
@@ -18,9 +18,9 @@ export function Navbar({ token, setToken, handleLogin, handleLogout }) {
       if (!response.ok) throw new Error("Credenziali non valide");
 
       const data = await response.json();
-      console.log("Token ricevuto:", data.token); // Debugging
-      setToken(data.token);  // Usa la funzione setToken passata dal componente App
-      handleLogin(data.token);  // Passa il token a LandingPage
+      console.log("Token ricevuto:", data.token);
+      setToken(data.token); // Aggiorna lo stato in App
+      handleLogin(data.token); // Avvisa App che abbiamo un token
       alert("Accesso effettuato con successo!");
     } catch (error) {
       console.error("Errore durante il login:", error);
@@ -36,12 +36,14 @@ export function Navbar({ token, setToken, handleLogin, handleLogout }) {
           alt="Logo"
           className="h-16 w-16 rounded-xl"
         />
-        <h1 className="text-white text-lg sm:text-5xl">SAPUTO ASSICURAZIONI</h1>
+        <h1 className="text-white text-lg sm:text-5xl">
+          SAPUTO ASSICURAZIONI
+        </h1>
       </div>
       <div>
         {token ? (
           <button
-            onClick={handleLogout}  // Gestione del logout con la funzione handleLogout
+            onClick={handleLogout}
             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-500"
           >
             Logout

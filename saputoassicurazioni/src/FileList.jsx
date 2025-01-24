@@ -6,8 +6,9 @@ export function FileList({ token }) {
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Quando il componente si monta o cambia il token, recuperiamo la lista di file
   useEffect(() => {
-    if (!token) return;
+    if (!token) return; // Se non c’è token, non facciamo la fetch
 
     fetch("http://localhost:3000/files", {
       headers: { Authorization: `Bearer ${token}` },
@@ -20,10 +21,37 @@ export function FileList({ token }) {
       .catch((err) => setError(err.message));
   }, [token]);
 
-  const downloadFile = (filename) => {
+  // Funzione per scaricare il file tramite fetch + Blob
+  const downloadFile = async (filename) => {
     setIsDownloading(true);
-    window.location.href = `http://localhost:3000/download/${filename}`;
-    setIsDownloading(false);
+    setError(null);
+
+    try {
+      const response = await fetch(`http://localhost:3000/download/${filename}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Errore nel download: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+
+      // Crea un link temporaneo per scaricare il file
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Download error:", err);
+      setError(err.message);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -31,7 +59,6 @@ export function FileList({ token }) {
       <h1 className="text-2xl font-bold mb-4">Elenco dei file</h1>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-
       {files.length === 0 && <p>Nessun file disponibile.</p>}
 
       <ul className="space-y-4">
@@ -49,7 +76,8 @@ export function FileList({ token }) {
               </button>
               <button
                 className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg"
-                onClick={() => downloadFile(file.libretto_veicolo_path)}>
+                onClick={() => downloadFile(file.libretto_veicolo_path)}
+              >
                 Scarica Libretto Veicolo
               </button>
             </div>

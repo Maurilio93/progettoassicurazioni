@@ -6,7 +6,8 @@ import {
   Typography,
 } from "@material-tailwind/react";
 
-export function Form() {
+// Riceviamo il token come prop
+export function Form({ token }) {
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [cartaIdentita, setCartaIdentita] = useState(null);
@@ -28,6 +29,7 @@ export function Form() {
     formData.append("telefono", telefono);
 
     try {
+      // Se token è null o undefined, la rotta protetta darà 403
       const response = await fetch("http://localhost:3000/upload", {
         method: "POST",
         body: formData,
@@ -38,6 +40,11 @@ export function Form() {
       }
 
       alert("Dati inviati con successo!"); // Mostra il messaggio di successo
+      // Se vuoi, puoi resettare i campi
+      setEmail("");
+      setTelefono("");
+      setCartaIdentita(null);
+      setLibrettoVeicolo(null);
     } catch (error) {
       console.error("Errore:", error);
       alert("Errore durante l'invio dei dati. Riprova più tardi.");
@@ -64,18 +71,18 @@ export function Form() {
       >
         Inserisci i dati richiesti
       </Typography>
+
       <form
         className="mt-8 mb-2 w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[500px]"
         onSubmit={handleSubmit}
       >
         <div className="mb-4 flex flex-col gap-6">
-          {/* Carta d'identità */}
           <Typography
             variant="h6"
             color="blue-gray"
             className="-mb-3 text-sm sm:text-base lg:text-lg"
           >
-            Carta d&#39;identità
+            Carta d'identità
           </Typography>
           <input
             type="file"
@@ -84,7 +91,6 @@ export function Form() {
             onChange={(e) => setCartaIdentita(e.target.files[0])}
           />
 
-          {/* Libretto Veicolo */}
           <Typography
             variant="h6"
             color="blue-gray"
@@ -99,7 +105,6 @@ export function Form() {
             onChange={(e) => setLibrettoVeicolo(e.target.files[0])}
           />
 
-          {/* Email */}
           <Typography
             variant="h6"
             color="blue-gray"
@@ -119,7 +124,6 @@ export function Form() {
             }}
           />
 
-          {/* Numero di telefono */}
           <Typography
             variant="h6"
             color="blue-gray"
@@ -139,7 +143,7 @@ export function Form() {
             }}
           />
         </div>
-        {/* Pulsante Invia */}
+
         <Button
           type="submit"
           className="mt-6 bg-blue-900 hover:bg-blue-800 text-sm sm:text-base lg:text-lg"

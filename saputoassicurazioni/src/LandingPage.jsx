@@ -2,13 +2,16 @@ import { ButtonWithLink } from "./Button";
 import { Form } from "./Form";
 import { Presentation } from "./Presentation";
 
-// Se hai bisogno di handleLogin dentro la LandingPage:
-export function LandingPage() {
+// Se vogliamo mostrare la Form anche da "non loggati", possiamo farlo.
+// Però, essendo "/upload" protetta, senza token darà 403.
+// Se preferisci mostrare la form SOLO agli utenti loggati, sposta <Form />
+// nella parte che appare quando token != null.
+
+export function LandingPage({ handleLogin, token }) {
   return (
     <div className="w-full">
-      {/* Sezione immagini affiancate */}
+      {/* Immagini e presentazione */}
       <div className="pt-24 mt-10 flex flex-col mobile:flex-col tablet:flex-col desktop:flex-row justify-center items-center gap-4 px-4 tablet:px-6 tablet:mt-8 desktop:px-8">
-        {/* Prima immagine con didascalia */}
         <div className="relative h-72 mobile:h-80 mobile:w-96 tablet:h-96 w-full tablet:w-full desktop:w-1/2 p-2 smalltablet:w-full">
           <img
             className="h-full w-full object-cover rounded-2xl"
@@ -22,7 +25,6 @@ export function LandingPage() {
           </figcaption>
         </div>
 
-        {/* Seconda immagine */}
         <div className="h-72 mobile:h-80 mobile:w-96 mobile:-mt-6 tablet:h-96 w-full tablet:w-full tablet:mt-8 desktop:w-4/6 p-2 desktop:-mt-6 smalltablet:w-full smalltablet:mt-8">
           <img
             className="h-full w-full object-contain rounded-2xl"
@@ -32,14 +34,12 @@ export function LandingPage() {
         </div>
       </div>
 
-      {/* Sezione Presentation */}
       <div className="flex flex-col justify-center items-center mt-10 px-4 tablet:px-6 desktop:px-0 mobile:-mt-8 tablet:mt-8 smalltablet:mt-8">
         <Presentation />
       </div>
 
-      {/* Sezione form e immagine accanto */}
+      {/* Sezione form + immagine */}
       <div className="flex flex-col tablet:flex-row items-center justify-center gap-8 mt-10 px-4 tablet:px-6 desktop:px-0">
-        {/* Immagine accanto alla form */}
         <div className="tablet:w-1/2 w-full h-auto mobile:mt-8">
           <img
             className="w-full h-full object-contain rounded-lg"
@@ -48,9 +48,9 @@ export function LandingPage() {
           />
         </div>
 
-        {/* Form accanto all'immagine */}
         <div className="tablet:w-1/2 w-full">
-          <Form />
+          {/* Passiamo il token anche qui per fare l'upload */}
+          <Form token={token} />
         </div>
       </div>
     </div>

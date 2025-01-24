@@ -4,15 +4,16 @@ import { Navbar } from "./Navbar";
 import { FileList } from "./FileList";
 
 function App() {
+  // Stato per memorizzare il token
   const [token, setToken] = useState(null);
 
-  // Funzione per gestire il login
-  const handleLogin = (token) => {
-    console.log("Token ricevuto in App:", token);
-    setToken(token);
+  // Funzione per gestire il login e salvare il token
+  const handleLogin = (receivedToken) => {
+    console.log("Token ricevuto in App:", receivedToken);
+    setToken(receivedToken);
   };
 
-  // Funzione per gestire il logout
+  // Funzione per gestire il logout (azzerare token)
   const handleLogout = () => {
     setToken(null);
   };
@@ -28,9 +29,9 @@ function App() {
       />
 
       {/* Se NON sei loggato, mostra la LandingPage;
-          se hai un token, mostra la lista dei file. */}
+          se hai un token, mostra la lista dei file */}
       {!token ? (
-        <LandingPage handleLogin={handleLogin} />
+        <LandingPage handleLogin={handleLogin} token={token} />
       ) : (
         <FileList token={token} />
       )}
