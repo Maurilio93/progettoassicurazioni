@@ -6,9 +6,8 @@ export function FileList({ token }) {
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Quando il componente si monta o cambia il token, recuperiamo la lista di file
   useEffect(() => {
-    if (!token) return; // Se non c’è token, non facciamo la fetch
+    if (!token) return; 
 
     fetch("http://localhost:3000/files", {
       headers: { Authorization: `Bearer ${token}` },

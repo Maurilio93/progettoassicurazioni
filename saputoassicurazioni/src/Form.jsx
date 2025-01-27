@@ -5,6 +5,7 @@ import {
   Button,
   Typography,
 } from "@material-tailwind/react";
+import Swal from "sweetalert2";
 
 // Riceviamo il token come prop
 export function Form({ token }) {
@@ -18,7 +19,12 @@ export function Form({ token }) {
 
     // Verifica che i file siano selezionati
     if (!cartaIdentita || !librettoVeicolo) {
-      alert("Tutti i file sono obbligatori!");
+      Swal.fire({
+        title: "Errore",
+        text: "Tutti i file sono obbligatori!",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
       return;
     }
 
@@ -39,15 +45,29 @@ export function Form({ token }) {
         throw new Error("Errore durante l'invio dei dati");
       }
 
-      alert("Dati inviati con successo!"); // Mostra il messaggio di successo
-      // Se vuoi, puoi resettare i campi
+      // SweetAlert2: Successo
+      Swal.fire({
+        title: "Successo",
+        text: "Dati inviati con successo!",
+        icon: "success",
+        confirmButtonText: "Ok",
+      });
+
+      // Resetta i campi dopo il successo
       setEmail("");
       setTelefono("");
       setCartaIdentita(null);
       setLibrettoVeicolo(null);
     } catch (error) {
       console.error("Errore:", error);
-      alert("Errore durante l'invio dei dati. Riprova più tardi.");
+
+      // SweetAlert2: Errore
+      Swal.fire({
+        title: "Errore",
+        text: "Errore durante l'invio dei dati. Riprova più tardi.",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
     }
   };
 

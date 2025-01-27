@@ -2,10 +2,6 @@ import { ButtonWithLink } from "./Button";
 import { Form } from "./Form";
 import { Presentation } from "./Presentation";
 
-// Se vogliamo mostrare la Form anche da "non loggati", possiamo farlo.
-// Però, essendo "/upload" protetta, senza token darà 403.
-// Se preferisci mostrare la form SOLO agli utenti loggati, sposta <Form />
-// nella parte che appare quando token != null.
 
 export function LandingPage({ handleLogin, token }) {
   return (
