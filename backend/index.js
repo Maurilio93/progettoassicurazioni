@@ -120,19 +120,41 @@ app.post("/admin/login", (req, res) => {
   res.status(401).json({ message: "Credenziali non valide" });
 });
 
-// API per ottenere i file (protetta)
+// Rotta per ottenere i file (protetta), con supporto al parametro ?search
 app.get("/files", authenticateToken, (req, res) => {
-  const query = "SELECT * FROM user_data";
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Errore durante il recupero dei dati:", err);
-      return res
-        .status(500)
-        .json({ message: "Errore durante il recupero dei dati" });
-    }
-    res.json(results);
-  });
+  const search = req.query.search || "";
+
+  // Se searchTerm è vuoto, ritorniamo tutti i record
+  if (!search) {
+    const query = "SELECT * FROM user_data";
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Errore durante il recupero dei dati:", err);
+        return res
+          .status(500)
+          .json({ message: "Errore durante il recupero dei dati" });
+      }
+      res.json(results);
+    });
+  } else {
+    // Altrimenti filtriamo nel DB usando LIKE
+    const query =
+      "SELECT * FROM user_data WHERE email LIKE ? OR telefono LIKE ?";
+    const likeSearch = `%${search}%`;
+
+    db.query(query, [likeSearch, likeSearch], (err, results) => {
+      if (err) {
+        console.error("Errore durante il recupero dei dati:", err);
+        return res
+          .status(500)
+          .json({ message: "Errore durante il recupero dei dati" });
+      }
+      res.json(results);
+    });
+  }
 });
+
+
 
 // Avvio del server
 app.listen(PORT, () => {
