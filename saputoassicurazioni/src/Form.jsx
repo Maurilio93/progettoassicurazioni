@@ -7,12 +7,16 @@ import {
 } from "@material-tailwind/react";
 import Swal from "sweetalert2";
 
-// Riceviamo il token come prop
-export function Form({ token }) {
+export function Form() {
+  // Stato per i dati
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
+  // Stato per i file
   const [cartaIdentita, setCartaIdentita] = useState(null);
   const [librettoVeicolo, setLibrettoVeicolo] = useState(null);
+
+  // Chiave per forzare la ricostruzione degli input file e svuotarli visivamente
+  const [fileKey, setFileKey] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +39,6 @@ export function Form({ token }) {
     formData.append("telefono", telefono);
 
     try {
-      // Se token è null o undefined, la rotta protetta darà 403
       const response = await fetch("http://localhost:3000/upload", {
         method: "POST",
         body: formData,
@@ -45,7 +48,7 @@ export function Form({ token }) {
         throw new Error("Errore durante l'invio dei dati");
       }
 
-      // SweetAlert2: Successo
+      // Se tutto va a buon fine, mostra un alert di successo
       Swal.fire({
         title: "Successo",
         text: "Dati inviati con successo!",
@@ -53,15 +56,19 @@ export function Form({ token }) {
         confirmButtonText: "Ok",
       });
 
-      // Resetta i campi dopo il successo
+      // Resetta i campi di stato
       setEmail("");
       setTelefono("");
       setCartaIdentita(null);
       setLibrettoVeicolo(null);
+
+      // Incrementa la chiave per forzare il "remount" degli input file
+      setFileKey((prev) => prev + 1);
+
     } catch (error) {
       console.error("Errore:", error);
 
-      // SweetAlert2: Errore
+      // Mostra un alert di errore
       Swal.fire({
         title: "Errore",
         text: "Errore durante l'invio dei dati. Riprova più tardi.",
@@ -102,9 +109,10 @@ export function Form({ token }) {
             color="blue-gray"
             className="-mb-3 text-sm sm:text-base lg:text-lg"
           >
-            Carta d'identità
+            Carta d&apos;identità
           </Typography>
           <input
+            key={`${fileKey}-carta`}
             type="file"
             accept="image/*"
             className="block w-full text-sm sm:text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-900 file:text-white hover:file:bg-blue-800"
@@ -119,6 +127,7 @@ export function Form({ token }) {
             Libretto Veicolo
           </Typography>
           <input
+            key={`${fileKey}-libretto`}
             type="file"
             accept="image/*"
             className="block w-full text-sm sm:text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-900 file:text-white hover:file:bg-blue-800"

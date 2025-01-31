@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+// eslint-disable-next-line react/prop-types
 export function FileList({ token }) {
   const [files, setFiles] = useState([]);
   const [error, setError] = useState(null);
@@ -9,10 +10,8 @@ export function FileList({ token }) {
   // Funzione per recuperare i file dal server (con o senza parametro di ricerca)
   const fetchFiles = async (search = "") => {
     try {
-      // Se esiste un searchTerm, costruiamo la query string ?search=...
-      const url = `http://localhost:3000/files${
-        search ? `?search=${encodeURIComponent(search)}` : ""
-      }`;
+      // Costruisce l'URL con la query di ricerca (se esiste)
+      const url = `http://localhost:3000/files${search ? `?search=${encodeURIComponent(search)}` : ""}`;
 
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -40,11 +39,19 @@ export function FileList({ token }) {
   // ricarichiamo la lista con il termine di ricerca
   useEffect(() => {
     if (!token) return;
-    fetchFiles(searchTerm);
+    const timeoutId = setTimeout(() => {
+      fetchFiles(searchTerm);
+    }, 500); // Aggiunto un debounce di 500ms
+    return () => clearTimeout(timeoutId);
   }, [searchTerm, token]);
 
   // Funzione per il download di un file
   const downloadFile = async (filename) => {
+    if (!filename) {
+      setError("Il file non è disponibile.");
+      return;
+    }
+
     setIsDownloading(true);
     setError(null);
 
@@ -89,7 +96,7 @@ export function FileList({ token }) {
         />
       </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
       {!error && files.length === 0 && <p>Nessun file disponibile.</p>}
 
       <ul className="space-y-4 mt-8">
@@ -99,18 +106,28 @@ export function FileList({ token }) {
             <p>Telefono: {file.telefono}</p>
 
             <div className="mt-4 space-x-2">
-              <button
-                className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg"
-                onClick={() => downloadFile(file.carta_identita_path)}
-              >
-                Scarica Carta d&apos;Identità
-              </button>
-              <button
-                className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg"
-                onClick={() => downloadFile(file.libretto_veicolo_path)}
-              >
-                Scarica Libretto Veicolo
-              </button>
+              {file.carta_identita_path ? (
+                <button
+                  className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg"
+                  onClick={() => downloadFile(file.carta_identita_path)}
+                >
+                  Scarica Carta d&apos;Identità
+                </button>
+              ) : (
+                <p className="text-gray-500">Nessuna carta d&apos;identità disponibile</p>
+              )}
+            </div>
+            <div className="mt-4 space-x-2">
+              {file.libretto_veicolo_path ? (
+                <button
+                  className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg"
+                  onClick={() => downloadFile(file.libretto_veicolo_path)}
+                >
+                  Scarica Libretto Veicolo
+                </button>
+              ) : (
+                <p className="text-gray-500">Nessun libretto veicolo disponibile</p>
+              )}
             </div>
           </li>
         ))}

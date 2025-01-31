@@ -3,7 +3,8 @@ import { Form } from "./Form";
 import { Presentation } from "./Presentation";
 
 
-export function LandingPage({ handleLogin, token }) {
+// eslint-disable-next-line react/prop-types
+export function LandingPage({ token }) {
   return (
     <div className="w-full">
       {/* Immagini e presentazione */}
@@ -49,6 +50,11 @@ export function LandingPage({ handleLogin, token }) {
           <Form token={token} />
         </div>
       </div>
+      <footer className="bg-blue-900 text-center py-4">
+        <p className="text-black">
+          &copy; {new Date().getFullYear()} Tutti i diritti riservati.
+        </p>
+      </footer>
     </div>
   );
 }
