@@ -33,6 +33,7 @@ export function FileList({ token }) {
   useEffect(() => {
     if (!token) return;
     fetchFiles();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   // Questo useEffect si attiva ogni volta che cambia searchTerm:
@@ -43,7 +44,8 @@ export function FileList({ token }) {
       fetchFiles(searchTerm);
     }, 500); // Aggiunto un debounce di 500ms
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, token]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ searchTerm, token]);
 
   // Funzione per il download di un file
   const downloadFile = async (filename) => {

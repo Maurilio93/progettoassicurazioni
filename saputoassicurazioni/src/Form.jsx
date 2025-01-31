@@ -21,7 +21,7 @@ export function Form() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verifica che i file siano selezionati
+    // Verifica che i file "obbligatori" siano selezionati
     if (!cartaIdentita || !librettoVeicolo) {
       Swal.fire({
         title: "Errore",
@@ -35,7 +35,12 @@ export function Form() {
     const formData = new FormData();
     formData.append("cartaIdentita", cartaIdentita);
     formData.append("librettoVeicolo", librettoVeicolo);
-    formData.append("email", email);
+
+    // Aggiungiamo la mail solo se non è vuota
+    if (email.trim() !== "") {
+      formData.append("email", email);
+    }
+
     formData.append("telefono", telefono);
 
     try {
@@ -139,12 +144,12 @@ export function Form() {
             color="blue-gray"
             className="-mb-3 text-sm sm:text-base lg:text-lg"
           >
-            Email
+            Email (opzionale)
           </Typography>
           <Input
             type="email"
             size="lg"
-            placeholder="name@mail.com"
+            placeholder="name@mail.com (opzionale)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="!border-t-blue-gray-200 focus:!border-t-gray-900"

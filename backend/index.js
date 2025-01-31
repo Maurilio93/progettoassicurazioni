@@ -77,14 +77,28 @@ app.post(
   "/upload",
   upload.fields([{ name: "cartaIdentita" }, { name: "librettoVeicolo" }]),
   (req, res) => {
-    const { email, telefono } = req.body;
+    // Ricava i campi dal body
+    let { email, telefono } = req.body;
 
-    // Ricava il nome del file generato da multer (senza "uploads/")
+    // Se email è vuota o assente, la mettiamo a NULL (se il DB lo consente)
+    if (!email || email.trim() === "") {
+      email = null;
+    }
+
+    // Ricava i file
     const cartaIdentitaFilename = req.files["cartaIdentita"][0].filename;
     const librettoVeicoloFilename = req.files["librettoVeicolo"][0].filename;
 
-    const query =
-      "INSERT INTO user_data (email, telefono, carta_identita_path, libretto_veicolo_path) VALUES (?, ?, ?, ?)";
+    // Query di INSERT
+    const query = `
+      INSERT INTO user_data (
+        email,
+        telefono,
+        carta_identita_path,
+        libretto_veicolo_path
+      )
+      VALUES (?, ?, ?, ?)
+    `;
     db.query(
       query,
       [email, telefono, cartaIdentitaFilename, librettoVeicoloFilename],
@@ -100,6 +114,7 @@ app.post(
     );
   }
 );
+
 
 
 // API per autenticare l'admin
